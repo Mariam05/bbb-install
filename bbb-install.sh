@@ -1130,14 +1130,22 @@ install_lti(){
 
   say "Setting/updating LTI credentials for LTI KEY: $LTI_KEY..."
 
-  if ! docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake db:keys:update["$LTI_KEY","$LTI_SECRET"] \
+  if docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake key:update["$LTI_KEY","$LTI_SECRET",""] \
     2> /dev/null 1>&2; then
-    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake db:keys:add["$LTI_KEY","$LTI_SECRET"] \
-      2> /dev/null 1>&2 || err "failed to set LTI credentials $LTI_KEY:$LTI_SECRET."
 
-      say "New LTI credentials for LTI KEY: $LTI_KEY were added!"
-  else
     say "LTI credentials for LTI KEY: $LTI_KEY were updated!"
+    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake key:enable:all \
+      2> /dev/null 1>&2 || err "failed to enable LTI credentials"
+
+  else
+    if docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake key:new["$LTI_KEY","$LTI_SECRET",""] \
+      2> /dev/null 1>&2; then
+        say "New LTI credentials for LTI KEY: $LTI_KEY were added!"
+        docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake key:enable:all \
+          2> /dev/null 1>&2 || err "failed to enable LTI credentials"
+    else
+        err "failed to set LTI credentials $LTI_KEY:$LTI_SECRET."
+    fi
   fi
 
   say "BBB LTI framework is installed, up to date and accessible on: https://$HOST/$BROKER_RELATIVE_URL_ROOT"
