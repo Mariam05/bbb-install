@@ -1335,12 +1335,12 @@ register_lti_tool() {
     err "failed to register $LOG_NAME due to LTI broker not running - retry to resolve."
   fi
 
-  if ! docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake db:apps:show["$APP_NAME"] \
+  if ! docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake apps:show["$APP_NAME"] \
     2> /dev/null 1>&2; then
-    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake db:apps:add["$APP_NAME","$CALLBACK_URI","$OAUTH_KEY","$OAUTH_SECRET"] \
+    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake apps:add["$APP_NAME","$CALLBACK_URI","$OAUTH_KEY","$OAUTH_SECRET"] \
       2> /dev/null 1>&2 && say "$LOG_NAME was successfully registered."
   else
-    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake db:apps:update["$APP_NAME","$CALLBACK_URI","$OAUTH_KEY","$OAUTH_SECRET"] \
+    docker-compose -f $LTI_DIR/docker-compose.yml exec -T broker bundle exec rake apps:update["$APP_NAME","$CALLBACK_URI","$OAUTH_KEY","$OAUTH_SECRET"] \
       2> /dev/null 1>&2 && say "$LOG_NAME was successfully updated."
   fi
 
